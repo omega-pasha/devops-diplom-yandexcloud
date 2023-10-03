@@ -139,103 +139,40 @@ Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
 
 Она разворачивает кластер с помощью kubeadm по этим [tasks](https://github.com/omega-pasha/diploma/blob/main/ansible/install_k8s_kubeadm/tasks/main.yml) 
   
-Ожидаемый результат:
-
-1. Работоспособный Kubernetes кластер.
-2. В файле `~/.kube/config` находятся данные для доступа к кластеру.
-3. Команда `kubectl get pods --all-namespaces` отрабатывает без ошибок.
+Результат:
+![](https://github.com/omega-pasha/devops-diplom-yandexcloud/blob/main/snapshots/Снимок%20экрана%202023-10-03%20в%2021.39.14.png)
 
 ---
 ### Создание тестового приложения
 
-Для перехода к следующему этапу необходимо подготовить тестовое приложение, эмулирующее основное приложение разрабатываемое вашей компанией.
-
-Способ подготовки:
-
-1. Рекомендуемый вариант:  
-   а. Создайте отдельный git репозиторий с простым nginx конфигом, который будет отдавать статические данные.  
-   б. Подготовьте Dockerfile для создания образа приложения.  
-2. Альтернативный вариант:  
-   а. Используйте любой другой код, главное, чтобы был самостоятельно создан Dockerfile.
-
-Ожидаемый результат:
-
-1. Git репозиторий с тестовым приложением и Dockerfile.
-2. Регистр с собранным docker image. В качестве регистра может быть DockerHub или [Yandex Container Registry](https://cloud.yandex.ru/services/container-registry), созданный также с помощью terraform.
+Создал html с картинкой и намеком на css, положил в [репозиторий](https://github.com/omega-pasha/diploma/tree/main/docker). Подготовил [Dockerfile](https://github.com/omega-pasha/diploma/blob/main/docker/Dockerfile) для создания образа приложения. Положил образ на [DockerHub](https://hub.docker.com/repository/docker/pomortsevpavel/diploma/general)
 
 ---
 ### Подготовка cистемы мониторинга и деплой приложения
 
-Уже должны быть готовы конфигурации для автоматического создания облачной инфраструктуры и поднятия Kubernetes кластера.  
-Теперь необходимо подготовить конфигурационные файлы для настройки нашего Kubernetes кластера.
+Задеплоил в кластер [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus), чтобы получить доступ извне, добавил ещё [манифест](https://github.com/omega-pasha/diploma/blob/main/monitoring_service.yaml)
 
-Цель:
-1. Задеплоить в кластер [prometheus](https://prometheus.io/), [grafana](https://grafana.com/), [alertmanager](https://github.com/prometheus/alertmanager), [экспортер](https://github.com/prometheus/node_exporter) основных метрик Kubernetes.
-2. Задеплоить тестовое приложение, например, [nginx](https://www.nginx.com/) сервер отдающий статическую страницу.
+![](https://github.com/omega-pasha/devops-diplom-yandexcloud/blob/main/snapshots/Снимок%20экрана%202023-10-03%20в%2021.53.13.png)
 
-Рекомендуемый способ выполнения:
-1. Воспользовать пакетом [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus), который уже включает в себя [Kubernetes оператор](https://operatorhub.io/) для [grafana](https://grafana.com/), [prometheus](https://prometheus.io/), [alertmanager](https://github.com/prometheus/alertmanager) и [node_exporter](https://github.com/prometheus/node_exporter). При желании можете собрать все эти приложения отдельно.
-2. Для организации конфигурации использовать [qbec](https://qbec.io/), основанный на [jsonnet](https://jsonnet.org/). Обратите внимание на имеющиеся функции для интеграции helm конфигов и [helm charts](https://helm.sh/)
-3. Если на первом этапе вы не воспользовались [Terraform Cloud](https://app.terraform.io/), то задеплойте в кластер [atlantis](https://www.runatlantis.io/) для отслеживания изменений инфраструктуры.
+Задеплоил приложение, с помощью манифестов:
+![](https://github.com/omega-pasha/devops-diplom-yandexcloud/blob/main/snapshots/Снимок%20экрана%202023-10-03%20в%2022.04.39.png)
 
-Альтернативный вариант:
-1. Для организации конфигурации можно использовать [helm charts](https://helm.sh/)
-
-Ожидаемый результат:
-1. Git репозиторий с конфигурационными файлами для настройки Kubernetes.
-2. Http доступ к web интерфейсу grafana.
-3. Дашборды в grafana отображающие состояние Kubernetes кластера.
-4. Http доступ к тестовому приложению.
+Проверил, что сервер отвечает:
+![](https://github.com/omega-pasha/devops-diplom-yandexcloud/blob/main/snapshots/Снимок%20экрана%202023-10-03%20в%2022.02.40.png)
 
 ---
 ### Установка и настройка CI/CD
 
 Осталось настроить ci/cd систему для автоматической сборки docker image и деплоя приложения при изменении кода.
 
-Цель:
+Использовал Gitlab. Настроил shell runner. Подготовил [ci/cd](https://github.com/omega-pasha/diploma/blob/main/.gitlab-ci.yml). Приложение собирается в контейнер из Dockerfile  
+и пушится в DockerHub. Деплой собирает все манифесты в один .template, в нем есть переменная окружения $DOCKER_IMAGE_NAME, чтобы получить её значение - пишем команду  
+`envsubst < config.yaml.template > config.yaml` и применяем манифест.
 
-1. Автоматическая сборка docker образа при коммите в репозиторий с тестовым приложением.
-2. Автоматический деплой нового docker образа.
+![](https://github.com/omega-pasha/devops-diplom-yandexcloud/blob/main/snapshots/Снимок%20экрана%202023-10-03%20в%2022.19.17.png)
 
-Можно использовать [teamcity](https://www.jetbrains.com/ru-ru/teamcity/), [jenkins](https://www.jenkins.io/), [GitLab CI](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/) или GitHub Actions.
+Ссылки:
+[GitHib](https://github.com/omega-pasha/diploma)  
+[Приложение](http://51.250.45.252:30080)  
+[Grafana](http://51.250.45.252:32000/)
 
-Ожидаемый результат:
-
-1. Интерфейс ci/cd сервиса доступен по http.
-2. При любом коммите в репозиторие с тестовым приложением происходит сборка и отправка в регистр Docker образа.
-3. При создании тега (например, v1.0.0) происходит сборка и отправка с соответствующим label в регистр, а также деплой соответствующего Docker образа в кластер Kubernetes.
-
----
-## Что необходимо для сдачи задания?
-
-1. Репозиторий с конфигурационными файлами Terraform и готовность продемонстрировать создание всех ресурсов с нуля.
-2. Пример pull request с комментариями созданными atlantis'ом или снимки экрана из Terraform Cloud.
-3. Репозиторий с конфигурацией ansible, если был выбран способ создания Kubernetes кластера при помощи ansible.
-4. Репозиторий с Dockerfile тестового приложения и ссылка на собранный docker image.
-5. Репозиторий с конфигурацией Kubernetes кластера.
-6. Ссылка на тестовое приложение и веб интерфейс Grafana с данными доступа.
-7. Все репозитории рекомендуется хранить на одном ресурсе (github, gitlab)
-
----
-## Как правильно задавать вопросы дипломному руководителю?
-
-Что поможет решить большинство частых проблем:
-
-1. Попробовать найти ответ сначала самостоятельно в интернете или в 
-  материалах курса и ДЗ и только после этого спрашивать у дипломного 
-  руководителя. Навык поиска ответов пригодится вам в профессиональной 
-  деятельности.
-2. Если вопросов больше одного, присылайте их в виде нумерованного 
-  списка. Так дипломному руководителю будет проще отвечать на каждый из 
-  них.
-3. При необходимости прикрепите к вопросу скриншоты и стрелочкой 
-  покажите, где не получается.
-
-Что может стать источником проблем:
-
-1. Вопросы вида «Ничего не работает. Не запускается. Всё сломалось». 
-  Дипломный руководитель не сможет ответить на такой вопрос без 
-  дополнительных уточнений. Цените своё время и время других.
-2. Откладывание выполнения курсового проекта на последний момент.
-3. Ожидание моментального ответа на свой вопрос. Дипломные руководители - практикующие специалисты, которые занимаются, кроме преподавания, 
-  своими проектами. Их время ограничено, поэтому постарайтесь задавать правильные вопросы, чтобы получать быстрые ответы :)
