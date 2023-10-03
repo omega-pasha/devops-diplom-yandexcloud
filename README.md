@@ -171,7 +171,7 @@ Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
 
 ![](https://github.com/omega-pasha/devops-diplom-yandexcloud/blob/main/snapshots/Снимок%20экрана%202023-10-03%20в%2022.19.17.png)
 
-Ссылки:
+Ссылки:  
 [GitHib](https://github.com/omega-pasha/diploma)  
 [Приложение](http://51.250.45.252:30080)  
 [Grafana](http://51.250.45.252:32000/)
