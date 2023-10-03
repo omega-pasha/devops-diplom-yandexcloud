@@ -14,7 +14,7 @@
 
 ### Создание облачной инфраструктуры
 
-Для начала необходимо подготовить облачную инфраструктуру в ЯО при помощи [Terraform](https://www.terraform.io/).
+Для начала необходимо подготовить облачную инфраструктуру в ЯО при помощи.
 Предварительная подготовка к установке и запуску Kubernetes кластера.
 
 1. Создал сервисный аккаунт, который будет в дальнейшем использоваться Terraform для работы с инфраструктурой с необходимыми и достаточными правами. Создал новый ключ RSA_2048 и выгрузил креденшелы в виде json-файла
@@ -23,10 +23,53 @@
    ![](https://github.com/omega-pasha/devops-diplom-yandexcloud/blob/main/snapshots/Снимок%20экрана%202023-10-03%20в%2020.56.29.png)
 3. Настроил 2 workspace, но по факту использовал только stage.
 4. Создал VPC с подсетями в разных зонах доступности.
+   
    [Репозиторий с terraform манифестами](https://github.com/omega-pasha/diploma/tree/main/terraform)
+   
 5. Убедился, что теперь могу выполнить команды `terraform destroy` и `terraform apply` без дополнительных ручных действий.
   ```
-  ╰─ terraform apply -auto-approve                                                                                                                                                                                  ─╯
+terraform destroy                                                                                                                                                                                              ─╯
+Running apply in Terraform Cloud. Output will stream here. Pressing Ctrl-C
+will cancel the remote apply if it's still pending. If the apply started it
+will stop streaming the logs, but will not stop the apply running remotely.
+
+Preparing the remote apply...
+
+To view this run in a browser, visit:
+https://app.terraform.io/app/netology_diploma/stage/runs/run-yxxsRWCGWGhHi9QA
+
+Waiting for the plan to start...
+
+Terraform v1.5.7
+on linux_amd64
+Initializing plugins and modules...
+yandex_vpc_network.diploma_vpc: Refreshing state... [id=enplshd2kv9lp46lghpo]
+yandex_vpc_subnet.diploma_subnet_a: Refreshing state... [id=e9b49fs08omb7b6e0q08]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  - destroy
+
+Terraform will perform the following actions:
+
+.....
+
+Plan: 0 to add, 0 to change, 2 to destroy.
+
+Do you really want to destroy all resources in workspace "stage"?
+  Terraform will destroy all your managed infrastructure, as shown above.
+  There is no undo. Only 'yes' will be accepted to confirm.
+
+  Enter a value: yes
+
+yandex_vpc_subnet.diploma_subnet_a: Destroying... [id=e9b49fs08omb7b6e0q08]
+yandex_vpc_subnet.diploma_subnet_a: Destruction complete after 6s
+yandex_vpc_network.diploma_vpc: Destroying... [id=enplshd2kv9lp46lghpo]
+yandex_vpc_network.diploma_vpc: Destruction complete after 1s
+
+Apply complete! Resources: 0 added, 0 changed, 2 destroyed.
+  ```
+  ```
+  terraform apply -auto-approve                                                                                                                                                                                  ─╯
 Running apply in Terraform Cloud. Output will stream here. Pressing Ctrl-C
 will cancel the remote apply if it's still pending. If the apply started it
 will stop streaming the logs, but will not stop the apply running remotely.
@@ -47,225 +90,7 @@ Terraform used the selected providers to generate the following execution plan. 
 
 Terraform will perform the following actions:
 
-  # yandex_compute_instance_group.master_nodes_group will be created
-  + resource "yandex_compute_instance_group" "master_nodes_group" {
-      + created_at          = (known after apply)
-      + deletion_protection = false
-      + folder_id           = "b1glodb3fcb408dgl593"
-      + id                  = (known after apply)
-      + instances           = (known after apply)
-      + name                = "master-node-group-stage"
-      + service_account_id  = "aje43v7g7g7b8jfa5no3"
-      + status              = (known after apply)
-
-      + allocation_policy {
-          + zones = [
-              + "ru-central1-a",
-              + "ru-central1-b",
-              + "ru-central1-c",
-            ]
-        }
-
-      + deploy_policy {
-          + max_creating     = 0
-          + max_deleting     = 0
-          + max_expansion    = 0
-          + max_unavailable  = 1
-          + startup_duration = 0
-          + strategy         = (known after apply)
-        }
-
-      + instance_template {
-          + hostname    = "master-stage-{instance.index}"
-          + labels      = (known after apply)
-          + metadata    = {
-              + "user-data" = <<-EOT
-                    #cloud-config
-                    users:
-                      - name: pavelpomorcev
-                        groups: sudo
-                        shell: /bin/bash
-                        sudo: ['ALL=(ALL) NOPASSWD:ALL']
-                        ssh_authorized_keys:
-                          - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGarLYwHCEcdV8wGoc3DAdd0AMiWm2G9OSTmP583UWdb pavelpomorcev@MacBook-Air-Pavel.local
-                EOT
-            }
-          + name        = "master-stage-{instance.index}"
-          + platform_id = "standard-v3"
-
-          + boot_disk {
-              + device_name = (known after apply)
-              + mode        = "READ_WRITE"
-
-              + initialize_params {
-                  + image_id    = "fd8oshj0osht8svg6rfs"
-                  + size        = 30
-                  + snapshot_id = (known after apply)
-                  + type        = "network-hdd"
-                }
-            }
-
-          + network_interface {
-              + ip_address   = (known after apply)
-              + ipv4         = true
-              + ipv6         = false
-              + ipv6_address = (known after apply)
-              + nat          = true
-              + network_id   = (known after apply)
-              + subnet_ids   = (known after apply)
-            }
-
-          + resources {
-              + core_fraction = 100
-              + cores         = 2
-              + memory        = 4
-            }
-        }
-
-      + scale_policy {
-          + fixed_scale {
-              + size = 1
-            }
-        }
-    }
-
-  # yandex_compute_instance_group.worker_nodes_group will be created
-  + resource "yandex_compute_instance_group" "worker_nodes_group" {
-      + created_at          = (known after apply)
-      + deletion_protection = false
-      + folder_id           = "b1glodb3fcb408dgl593"
-      + id                  = (known after apply)
-      + instances           = (known after apply)
-      + name                = "worker-node-group-stage"
-      + service_account_id  = "aje43v7g7g7b8jfa5no3"
-      + status              = (known after apply)
-
-      + allocation_policy {
-          + zones = [
-              + "ru-central1-a",
-              + "ru-central1-b",
-              + "ru-central1-c",
-            ]
-        }
-
-      + deploy_policy {
-          + max_creating     = 0
-          + max_deleting     = 0
-          + max_expansion    = 0
-          + max_unavailable  = 1
-          + startup_duration = 0
-          + strategy         = (known after apply)
-        }
-
-      + instance_template {
-          + hostname    = "worker-stage-{instance.index}"
-          + labels      = (known after apply)
-          + metadata    = {
-              + "user-data" = <<-EOT
-                    #cloud-config
-                    users:
-                      - name: pavelpomorcev
-                        groups: sudo
-                        shell: /bin/bash
-                        sudo: ['ALL=(ALL) NOPASSWD:ALL']
-                        ssh_authorized_keys:
-                          - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGarLYwHCEcdV8wGoc3DAdd0AMiWm2G9OSTmP583UWdb pavelpomorcev@MacBook-Air-Pavel.local
-                EOT
-            }
-          + name        = "worker-stage-{instance.index}"
-          + platform_id = "standard-v3"
-
-          + boot_disk {
-              + device_name = (known after apply)
-              + mode        = "READ_WRITE"
-
-              + initialize_params {
-                  + image_id    = "fd8oshj0osht8svg6rfs"
-                  + size        = 30
-                  + snapshot_id = (known after apply)
-                  + type        = "network-hdd"
-                }
-            }
-
-          + network_interface {
-              + ip_address   = (known after apply)
-              + ipv4         = true
-              + ipv6         = false
-              + ipv6_address = (known after apply)
-              + nat          = true
-              + network_id   = (known after apply)
-              + subnet_ids   = (known after apply)
-            }
-
-          + resources {
-              + core_fraction = 100
-              + cores         = 2
-              + memory        = 4
-            }
-        }
-
-      + scale_policy {
-          + fixed_scale {
-              + size = 2
-            }
-        }
-    }
-
-  # yandex_vpc_network.diploma_vpc will be created
-  + resource "yandex_vpc_network" "diploma_vpc" {
-      + created_at                = (known after apply)
-      + default_security_group_id = (known after apply)
-      + folder_id                 = (known after apply)
-      + id                        = (known after apply)
-      + labels                    = (known after apply)
-      + name                      = "diploma-vpc-stage"
-      + subnet_ids                = (known after apply)
-    }
-
-  # yandex_vpc_subnet.diploma_subnet_a will be created
-  + resource "yandex_vpc_subnet" "diploma_subnet_a" {
-      + created_at     = (known after apply)
-      + folder_id      = (known after apply)
-      + id             = (known after apply)
-      + labels         = (known after apply)
-      + name           = "diploma_net_a_stage"
-      + network_id     = (known after apply)
-      + v4_cidr_blocks = [
-          + "10.0.1.0/24",
-        ]
-      + v6_cidr_blocks = (known after apply)
-      + zone           = "ru-central1-a"
-    }
-
-  # yandex_vpc_subnet.diploma_subnet_b will be created
-  + resource "yandex_vpc_subnet" "diploma_subnet_b" {
-      + created_at     = (known after apply)
-      + folder_id      = (known after apply)
-      + id             = (known after apply)
-      + labels         = (known after apply)
-      + name           = "diploma_net_b_stage"
-      + network_id     = (known after apply)
-      + v4_cidr_blocks = [
-          + "10.0.2.0/24",
-        ]
-      + v6_cidr_blocks = (known after apply)
-      + zone           = "ru-central1-b"
-    }
-
-  # yandex_vpc_subnet.diploma_subnet_c will be created
-  + resource "yandex_vpc_subnet" "diploma_subnet_c" {
-      + created_at     = (known after apply)
-      + folder_id      = (known after apply)
-      + id             = (known after apply)
-      + labels         = (known after apply)
-      + name           = "diploma_net_c_stage"
-      + network_id     = (known after apply)
-      + v4_cidr_blocks = [
-          + "10.0.3.0/24",
-        ]
-      + v6_cidr_blocks = (known after apply)
-      + zone           = "ru-central1-c"
-    }
+.....
 
 Plan: 6 to add, 0 to change, 0 to destroy.
 
@@ -296,41 +121,23 @@ yandex_compute_instance_group.master_nodes_group: Creation complete after 51s [i
 yandex_compute_instance_group.worker_nodes_group: Creation complete after 55s [id=cl13ld5mjquch0vrfule]
 
 Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
-
-Outputs:
-ansible_inventory = <<-EOT
-        [masters]
-        master1 ansible_host=158.160.4.113 ansible_user=root
-        
-        [workers]
-        worker1 ansible_host=158.160.83.141 ansible_user=root
-        worker2 ansible_host=51.250.45.252 ansible_user=root
-        
-        [all:vars]
-        ansible_python_interpreter=/usr/bin/python3
-    EOT
   ```
-7. В случае использования [Terraform Cloud](https://app.terraform.io/) в качестве [backend](https://www.terraform.io/docs/language/settings/backends/index.html) убедитесь, что применение изменений успешно проходит, используя web-интерфейс Terraform cloud.
 
-Ожидаемые результаты:
-
-1. Terraform сконфигурирован и создание инфраструктуры посредством Terraform возможно без дополнительных ручных действий.
-2. Полученная конфигурация инфраструктуры является предварительной, поэтому в ходе дальнейшего выполнения задания возможны изменения.
+6. Убедился, что применение изменений успешно проходит, используя web-интерфейс Terraform cloud.
+   ![](https://github.com/omega-pasha/devops-diplom-yandexcloud/blob/main/snapshots/Снимок%20экрана%202023-10-03%20в%2021.13.50.png)
 
 ---
 ### Создание Kubernetes кластера
 
-На этом этапе необходимо создать [Kubernetes](https://kubernetes.io/ru/docs/concepts/overview/what-is-kubernetes/) кластер на базе предварительно созданной инфраструктуры.   Требуется обеспечить доступ к ресурсам из Интернета.
+На этом этапе необходимо создать кластер на базе предварительно созданной инфраструктуры.   Требуется обеспечить доступ к ресурсам из Интернета.
 
-Это можно сделать двумя способами:
+1. При помощи Terraform подготовил как минимум 3 виртуальных машины Compute Cloud для создания Kubernetes-кластера. Количество создавайемых ВМ определяется [переменными](https://github.com/omega-pasha/diploma/blob/main/terraform/variables.tf), которые вынесены в отдельный файл.  
+Так же в отделные файлы вынес создание [Control-node](https://github.com/omega-pasha/diploma/blob/main/terraform/master-instanses.tf) и [Worker-node](https://github.com/omega-pasha/diploma/blob/main/terraform/worker-instances.tf). Написал манифест, для получения output по [шаблону](https://github.com/omega-pasha/diploma/blob/main/terraform/templates/inventory.tpl). С помощью него генерируется ansible inventory.
+2. Подготовил ansible роль
 
-1. Рекомендуемый вариант: самостоятельная установка Kubernetes кластера.  
-   а. При помощи Terraform подготовить как минимум 3 виртуальных машины Compute Cloud для создания Kubernetes-кластера. Тип виртуальной машины следует выбрать самостоятельно с учётом требовании к производительности и стоимости. Если в дальнейшем поймете, что необходимо сменить тип инстанса, используйте Terraform для внесения изменений.  
-   б. Подготовить [ansible](https://www.ansible.com/) конфигурации, можно воспользоваться, например [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/)  
-   в. Задеплоить Kubernetes на подготовленные ранее инстансы, в случае нехватки каких-либо ресурсов вы всегда можете создать их при помощи Terraform.
-2. Альтернативный вариант: воспользуйтесь сервисом [Yandex Managed Service for Kubernetes](https://cloud.yandex.ru/services/managed-kubernetes)  
-  а. С помощью terraform resource для [kubernetes](https://registry.terraform.io/providers/yandex-cloud/yandex/latest/docs/resources/kubernetes_cluster) создать региональный мастер kubernetes с размещением нод в разных 3 подсетях      
-  б. С помощью terraform resource для [kubernetes node group](https://registry.terraform.io/providers/yandex-cloud/yandex/latest/docs/resources/kubernetes_node_group)
+[Ansible role, playbook](https://github.com/omega-pasha/diploma/tree/main/ansible)
+
+Она разворачивает кластер с помощью kubeadm по этим [tasks](https://github.com/omega-pasha/diploma/blob/main/ansible/install_k8s_kubeadm/tasks/main.yml) 
   
 Ожидаемый результат:
 
