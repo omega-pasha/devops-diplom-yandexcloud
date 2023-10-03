@@ -19,14 +19,297 @@
 
 1. Создал сервисный аккаунт, который будет в дальнейшем использоваться Terraform для работы с инфраструктурой с необходимыми и достаточными правами. Создал новый ключ RSA_2048 и выгрузил креденшелы в виде json-файла
    ![](https://github.com/omega-pasha/devops-diplom-yandexcloud/blob/main/snapshots/Снимок%20экрана%202023-10-03%20в%2020.39.02.png)
-3. Подготовьте [backend](https://www.terraform.io/docs/language/settings/backends/index.html) для Terraform:  
-   а. Рекомендуемый вариант: [Terraform Cloud](https://app.terraform.io/)  
-   б. Альтернативный вариант: S3 bucket в созданном ЯО аккаунте
-4. Настройте [workspaces](https://www.terraform.io/docs/language/state/workspaces.html)  
-   а. Рекомендуемый вариант: создайте два workspace: *stage* и *prod*. В случае выбора этого варианта все последующие шаги должны учитывать факт существования нескольких workspace.  
-   б. Альтернативный вариант: используйте один workspace, назвав его *stage*. Пожалуйста, не используйте workspace, создаваемый Terraform-ом по-умолчанию (*default*).
-5. Создайте VPC с подсетями в разных зонах доступности.
-6. Убедитесь, что теперь вы можете выполнить команды `terraform destroy` и `terraform apply` без дополнительных ручных действий.
+2. Подготовил backend для Terraform с помощью Terraform Cloud:
+   ![](https://github.com/omega-pasha/devops-diplom-yandexcloud/blob/main/snapshots/Снимок%20экрана%202023-10-03%20в%2020.56.29.png)
+3. Настроил 2 workspace, но по факту использовал только stage.
+4. Создал VPC с подсетями в разных зонах доступности.
+   [Репозиторий с terraform манифестами](https://github.com/omega-pasha/diploma/tree/main/terraform)
+5. Убедился, что теперь могу выполнить команды `terraform destroy` и `terraform apply` без дополнительных ручных действий.
+  ```
+  ╰─ terraform apply -auto-approve                                                                                                                                                                                  ─╯
+Running apply in Terraform Cloud. Output will stream here. Pressing Ctrl-C
+will cancel the remote apply if it's still pending. If the apply started it
+will stop streaming the logs, but will not stop the apply running remotely.
+
+Preparing the remote apply...
+
+To view this run in a browser, visit:
+https://app.terraform.io/app/netology_diploma/stage/runs/run-SeFcGVx145yqbQdY
+
+Waiting for the plan to start...
+
+Terraform v1.5.7
+on linux_amd64
+Initializing plugins and modules...
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # yandex_compute_instance_group.master_nodes_group will be created
+  + resource "yandex_compute_instance_group" "master_nodes_group" {
+      + created_at          = (known after apply)
+      + deletion_protection = false
+      + folder_id           = "b1glodb3fcb408dgl593"
+      + id                  = (known after apply)
+      + instances           = (known after apply)
+      + name                = "master-node-group-stage"
+      + service_account_id  = "aje43v7g7g7b8jfa5no3"
+      + status              = (known after apply)
+
+      + allocation_policy {
+          + zones = [
+              + "ru-central1-a",
+              + "ru-central1-b",
+              + "ru-central1-c",
+            ]
+        }
+
+      + deploy_policy {
+          + max_creating     = 0
+          + max_deleting     = 0
+          + max_expansion    = 0
+          + max_unavailable  = 1
+          + startup_duration = 0
+          + strategy         = (known after apply)
+        }
+
+      + instance_template {
+          + hostname    = "master-stage-{instance.index}"
+          + labels      = (known after apply)
+          + metadata    = {
+              + "user-data" = <<-EOT
+                    #cloud-config
+                    users:
+                      - name: pavelpomorcev
+                        groups: sudo
+                        shell: /bin/bash
+                        sudo: ['ALL=(ALL) NOPASSWD:ALL']
+                        ssh_authorized_keys:
+                          - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGarLYwHCEcdV8wGoc3DAdd0AMiWm2G9OSTmP583UWdb pavelpomorcev@MacBook-Air-Pavel.local
+                EOT
+            }
+          + name        = "master-stage-{instance.index}"
+          + platform_id = "standard-v3"
+
+          + boot_disk {
+              + device_name = (known after apply)
+              + mode        = "READ_WRITE"
+
+              + initialize_params {
+                  + image_id    = "fd8oshj0osht8svg6rfs"
+                  + size        = 30
+                  + snapshot_id = (known after apply)
+                  + type        = "network-hdd"
+                }
+            }
+
+          + network_interface {
+              + ip_address   = (known after apply)
+              + ipv4         = true
+              + ipv6         = false
+              + ipv6_address = (known after apply)
+              + nat          = true
+              + network_id   = (known after apply)
+              + subnet_ids   = (known after apply)
+            }
+
+          + resources {
+              + core_fraction = 100
+              + cores         = 2
+              + memory        = 4
+            }
+        }
+
+      + scale_policy {
+          + fixed_scale {
+              + size = 1
+            }
+        }
+    }
+
+  # yandex_compute_instance_group.worker_nodes_group will be created
+  + resource "yandex_compute_instance_group" "worker_nodes_group" {
+      + created_at          = (known after apply)
+      + deletion_protection = false
+      + folder_id           = "b1glodb3fcb408dgl593"
+      + id                  = (known after apply)
+      + instances           = (known after apply)
+      + name                = "worker-node-group-stage"
+      + service_account_id  = "aje43v7g7g7b8jfa5no3"
+      + status              = (known after apply)
+
+      + allocation_policy {
+          + zones = [
+              + "ru-central1-a",
+              + "ru-central1-b",
+              + "ru-central1-c",
+            ]
+        }
+
+      + deploy_policy {
+          + max_creating     = 0
+          + max_deleting     = 0
+          + max_expansion    = 0
+          + max_unavailable  = 1
+          + startup_duration = 0
+          + strategy         = (known after apply)
+        }
+
+      + instance_template {
+          + hostname    = "worker-stage-{instance.index}"
+          + labels      = (known after apply)
+          + metadata    = {
+              + "user-data" = <<-EOT
+                    #cloud-config
+                    users:
+                      - name: pavelpomorcev
+                        groups: sudo
+                        shell: /bin/bash
+                        sudo: ['ALL=(ALL) NOPASSWD:ALL']
+                        ssh_authorized_keys:
+                          - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGarLYwHCEcdV8wGoc3DAdd0AMiWm2G9OSTmP583UWdb pavelpomorcev@MacBook-Air-Pavel.local
+                EOT
+            }
+          + name        = "worker-stage-{instance.index}"
+          + platform_id = "standard-v3"
+
+          + boot_disk {
+              + device_name = (known after apply)
+              + mode        = "READ_WRITE"
+
+              + initialize_params {
+                  + image_id    = "fd8oshj0osht8svg6rfs"
+                  + size        = 30
+                  + snapshot_id = (known after apply)
+                  + type        = "network-hdd"
+                }
+            }
+
+          + network_interface {
+              + ip_address   = (known after apply)
+              + ipv4         = true
+              + ipv6         = false
+              + ipv6_address = (known after apply)
+              + nat          = true
+              + network_id   = (known after apply)
+              + subnet_ids   = (known after apply)
+            }
+
+          + resources {
+              + core_fraction = 100
+              + cores         = 2
+              + memory        = 4
+            }
+        }
+
+      + scale_policy {
+          + fixed_scale {
+              + size = 2
+            }
+        }
+    }
+
+  # yandex_vpc_network.diploma_vpc will be created
+  + resource "yandex_vpc_network" "diploma_vpc" {
+      + created_at                = (known after apply)
+      + default_security_group_id = (known after apply)
+      + folder_id                 = (known after apply)
+      + id                        = (known after apply)
+      + labels                    = (known after apply)
+      + name                      = "diploma-vpc-stage"
+      + subnet_ids                = (known after apply)
+    }
+
+  # yandex_vpc_subnet.diploma_subnet_a will be created
+  + resource "yandex_vpc_subnet" "diploma_subnet_a" {
+      + created_at     = (known after apply)
+      + folder_id      = (known after apply)
+      + id             = (known after apply)
+      + labels         = (known after apply)
+      + name           = "diploma_net_a_stage"
+      + network_id     = (known after apply)
+      + v4_cidr_blocks = [
+          + "10.0.1.0/24",
+        ]
+      + v6_cidr_blocks = (known after apply)
+      + zone           = "ru-central1-a"
+    }
+
+  # yandex_vpc_subnet.diploma_subnet_b will be created
+  + resource "yandex_vpc_subnet" "diploma_subnet_b" {
+      + created_at     = (known after apply)
+      + folder_id      = (known after apply)
+      + id             = (known after apply)
+      + labels         = (known after apply)
+      + name           = "diploma_net_b_stage"
+      + network_id     = (known after apply)
+      + v4_cidr_blocks = [
+          + "10.0.2.0/24",
+        ]
+      + v6_cidr_blocks = (known after apply)
+      + zone           = "ru-central1-b"
+    }
+
+  # yandex_vpc_subnet.diploma_subnet_c will be created
+  + resource "yandex_vpc_subnet" "diploma_subnet_c" {
+      + created_at     = (known after apply)
+      + folder_id      = (known after apply)
+      + id             = (known after apply)
+      + labels         = (known after apply)
+      + name           = "diploma_net_c_stage"
+      + network_id     = (known after apply)
+      + v4_cidr_blocks = [
+          + "10.0.3.0/24",
+        ]
+      + v6_cidr_blocks = (known after apply)
+      + zone           = "ru-central1-c"
+    }
+
+Plan: 6 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + ansible_inventory = (known after apply)
+
+yandex_vpc_network.diploma_vpc: Creating...
+yandex_vpc_network.diploma_vpc: Creation complete after 5s [id=enp65n1deiv07721ural]
+yandex_vpc_subnet.diploma_subnet_a: Creating...
+yandex_vpc_subnet.diploma_subnet_c: Creating...
+yandex_vpc_subnet.diploma_subnet_b: Creating...
+yandex_vpc_subnet.diploma_subnet_b: Creation complete after 1s [id=e2l4nki1dc2aks323e8e]
+yandex_vpc_subnet.diploma_subnet_c: Creation complete after 2s [id=b0c65pj6568n87cfcadc]
+yandex_vpc_subnet.diploma_subnet_a: Creation complete after 3s [id=e9bbkhgb4k3kj0mrub3n]
+yandex_compute_instance_group.master_nodes_group: Creating...
+yandex_compute_instance_group.worker_nodes_group: Creating...
+yandex_compute_instance_group.worker_nodes_group: Still creating... [10s elapsed]
+yandex_compute_instance_group.master_nodes_group: Still creating... [10s elapsed]
+yandex_compute_instance_group.master_nodes_group: Still creating... [20s elapsed]
+yandex_compute_instance_group.worker_nodes_group: Still creating... [20s elapsed]
+yandex_compute_instance_group.master_nodes_group: Still creating... [30s elapsed]
+yandex_compute_instance_group.worker_nodes_group: Still creating... [30s elapsed]
+yandex_compute_instance_group.worker_nodes_group: Still creating... [40s elapsed]
+yandex_compute_instance_group.master_nodes_group: Still creating... [40s elapsed]
+yandex_compute_instance_group.master_nodes_group: Still creating... [50s elapsed]
+yandex_compute_instance_group.worker_nodes_group: Still creating... [50s elapsed]
+yandex_compute_instance_group.master_nodes_group: Creation complete after 51s [id=cl1hl7ft3kg5465breos]
+yandex_compute_instance_group.worker_nodes_group: Creation complete after 55s [id=cl13ld5mjquch0vrfule]
+
+Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+
+Outputs:
+ansible_inventory = <<-EOT
+        [masters]
+        master1 ansible_host=158.160.4.113 ansible_user=root
+        
+        [workers]
+        worker1 ansible_host=158.160.83.141 ansible_user=root
+        worker2 ansible_host=51.250.45.252 ansible_user=root
+        
+        [all:vars]
+        ansible_python_interpreter=/usr/bin/python3
+    EOT
+  ```
 7. В случае использования [Terraform Cloud](https://app.terraform.io/) в качестве [backend](https://www.terraform.io/docs/language/settings/backends/index.html) убедитесь, что применение изменений успешно проходит, используя web-интерфейс Terraform cloud.
 
 Ожидаемые результаты:
