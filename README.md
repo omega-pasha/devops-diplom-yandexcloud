@@ -28,7 +28,7 @@
    
 5. Убедился, что теперь могу выполнить команды `terraform destroy` и `terraform apply` без дополнительных ручных действий.
   ```
-terraform destroy                                                                                                                                                                                              ─╯
+terraform destroy                                                                                                                                                                                       
 Running apply in Terraform Cloud. Output will stream here. Pressing Ctrl-C
 will cancel the remote apply if it's still pending. If the apply started it
 will stop streaming the logs, but will not stop the apply running remotely.
@@ -69,7 +69,7 @@ yandex_vpc_network.diploma_vpc: Destruction complete after 1s
 Apply complete! Resources: 0 added, 0 changed, 2 destroyed.
   ```
   ```
-  terraform apply -auto-approve                                                                                                                                                                                  ─╯
+  terraform apply -auto-approve                                                                                                                                                                          
 Running apply in Terraform Cloud. Output will stream here. Pressing Ctrl-C
 will cancel the remote apply if it's still pending. If the apply started it
 will stop streaming the logs, but will not stop the apply running remotely.
